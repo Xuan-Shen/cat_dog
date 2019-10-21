@@ -8,8 +8,18 @@
 ## 3
 因为cpu一直用不掉  用cpu做一次训练 发现速度真的是可以了(基本上一个epoch就要3,4个小时)，算了还是GPU吧
 
+## 4
+读取.h5文件的权重，因为Jupyter notebook我这里下载预训练文件很慢，我把他们下载到了本地，通过OBS服务上传到Jupyter notebook中(速度很快)
+
+base_model = InceptionV3(weights=None, include_top=False,input_shape=(rows, cols, channels), pooling='avg')
+base_model.load_weights('./inception_v3_weights_tf_dim_ordering_tf_kernels_notop.h5')
+然后通过这两句话进行模型建立就好，看好.h5文件存放位置就可以
+
+![image](https://user-images.githubusercontent.com/50792908/67177829-cf819a00-f402-11e9-9161-701f2b269bbd.png)
+
 
 #  进入正题==============================
+
 ## Xception
 
 使用Imagenet后在训练集上很好，但是测试集效果一般，过拟合现象，最后跑到测试集上啥用没有
