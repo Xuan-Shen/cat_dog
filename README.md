@@ -1,34 +1,47 @@
-# 00任务
-## 1.LearningRateScheduler函数原理
-LearningRateScheduler为回调函数callbacks中对学习率进行更改的函数，其又名学习速率定时器，是可以在每一次的epoch中都可以对学习率进行更改的函数，而如何更改则取决于你定义的函数。
+# 第二期猫狗识别案例使用Xception、InceptionV3等神经网络尝试
+## 1
+[知乎上的猫狗识别案例](https://zhuanlan.zhihu.com/p/25978105) 这个作者说的非常好，但是我卡在了运用他训练的.h5文件参数等跑我们自己的猫狗数据集时，数据维度就对不上，只能按照他的（25000，,2048）这个维度来，行不通。不过这个尝试让我学会怎么把超过100MB的文件上传到Jupyter notebook中，就是先上传到OBS中，然后用MOdel.session把文件下载进来就ok（ps:速度确实是快）
 
-## 2.LearningRateScheduler函数使用
-![image](https://user-images.githubusercontent.com/50792908/67015870-cd30ee80-f129-11e9-9381-028cd1908f7f.png)
-由上方官方文档介绍知，LearningRateScheduler接受两个形参，一位schedule，一为verbose。verbose在这里不多讲，而schedule则是自己定义的函数，schedule接受一个形参(epoch)，同时，Model也可传入schedule中，返回一个浮点数作为新一轮的学习率
-使用实例如图
-![image](https://user-images.githubusercontent.com/50792908/67016344-a32bfc00-f12a-11e9-8401-9d1046cd1015.png)
+## 2
+做了好几天，发现在不使用'imagenet'预训练出的文件情况下，始终找不到办法提高准确率(Xception，InceptionV3)，Xception在几轮之后就开始过拟合，InceptionV3训练准确率一直提不上去[可能是我不会调节神经网络的层数或者参数。。][以后会了还会把猫狗识别这个案例调节上去的，等以后学的多了再过来看看吧]。做到最后有点沮丧，所以就拿三个Xception InceptionV3 还有VGG19三个模型的imagenet做训练，顺便还找了个VGG16的'imagenet’预训练文件试了试，做到最后还有有点小发现的。
 
-## 3.LearningRateScheduler和ReductLROnPlateau函数的比较
-回调器中有两个函数均可对学习率进行操作更改，分别为LearningRateScheduler和ReductLROnPlateau函数，但是两者工作原理不一样。LearningRateScheduler是对每一轮的学习率都进行更改矫正。而ReductLROnPlateau如下图所示，
-![image](https://user-images.githubusercontent.com/50792908/67016669-264d5200-f12b-11e9-8203-9100f1a88e28.png)
-其是在某几轮训练下来，准确率的提高没有达到期望值时才对学习率进行更改。
-
-## 4.LearningRateScheduler使用中的难点
-其实难点仍是在于学习率的调整，太大了忽略掉全局最优解、太小了又可能在局部最优解震荡，因此难点仍是在学习率的调整，较为靠谱的思路是参考每一轮的loss，以loss作为权重调解下一轮的学习率。
-
-## 5.LearningRateScheduler中未解决问题
-参考Model的loss的话，就需要把每一轮的loss数值传入进去，但是，emmmm能力有限，不知道怎么传，希望知道的大神指导一下~~~~
+## 3
+因为cpu一直用不掉  用cpu做一次训练 发现速度真的是可以了(基本上一个epoch就要3,4个小时)，算了还是GPU吧
 
 
-==========================================================
+#  进入正题==============================
+## Xception
 
+使用Imagenet后在训练集上很好，但是测试集效果一般，过拟合现象，最后跑到测试集上啥用没有
 
-#  01任务
-## 3个加速器在epoch为40下的结果分析比较
+![image](https://user-images.githubusercontent.com/50792908/67162047-0b7d1680-f393-11e9-909a-7764836fab21.png)
 
-##  1.rmsprop优化器
+## InceptionV3
+![image](https://user-images.githubusercontent.com/50792908/67162098-8e9e6c80-f393-11e9-9331-8d01ead2d2b9.png)
 
+和XceptiXception一样，也是过拟合
 
-##  2.adam优化器
+## VGG19
+在VGG19中，发现无参运行下，10轮下来，模型几乎没有提升，而在imagenet情况下，发现前几轮训练很差，但是7轮之后速度飞速上升，
+这个是参数没有预训练的，
 
-## 3.SGD优化器
+![image](https://user-images.githubusercontent.com/50792908/67162055-23549a80-f393-11e9-85d6-11fae57aba61.png)
+
+这个是参数预训练的
+
+![image](https://user-images.githubusercontent.com/50792908/67162065-35ced400-f393-11e9-9fad-0c0a4527983a.png)
+
+很明显，没有预训练过的在10epoch之中几乎没有显现效果，预训练过的在前期也很low，但是7epoch下来之后开始飞速上涨。（小惊喜）。
+
+## VGG16
+这个是带预训练的，和VGG19很类似，前期比较low，但是后期涨得快，和不带预训练的有所差异。(图片上的标题写错了，是VGG16)
+
+![image](https://user-images.githubusercontent.com/50792908/67162132-d0c7ae00-f393-11e9-8a2a-be2f586bbe75.png)
+
+### 所有预训练的.h5文件我下载到本地了，各位想下载的可以[云盘](https://pan.baidu.com/s/1rcRwW46F2zYdpj9pj1CKnA&shfl=sharepset)
+### 提取码：ssp0 
+
+### 最后，[Github项目地址](https://github.com/JUSxuaxuan/cat_dog/blob/master/%E7%AC%AC%E4%BA%8C%E6%9C%9F%E6%89%A9%E5%B1%95%E7%8C%AB%E7%8B%97%E8%AF%86%E5%88%AB.ipynb)
+
+[个人感觉，这16期活动，都能开个培训班了~~~~]
+
